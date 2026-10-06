@@ -1,0 +1,14 @@
+node_modules/
+.next/
+.env
+.env.local
+.env.*.local
+coverage/
+dist/
+*.log
+.DS_Store
+Thumbs.db
+
+# Ruflo local runtime state and generated memory
+.claude-flow/
+.ruflo/
