@@ -7,6 +7,7 @@ export type Evidence = {
   label: string;
   detail: string;
   external?: boolean;
+  url?: string;
 };
 
 export type Finding = {

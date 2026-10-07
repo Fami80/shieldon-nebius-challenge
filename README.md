@@ -26,14 +26,14 @@ Then open `http://localhost:3000`.
 
 The interface works with a seeded demonstration case and can also run the same evidence through NVIDIA Nemotron on Nebius Token Factory.
 
-Copy `.env.example` to `.env.local`, add your Token Factory API key, and restart the development server. Never commit `.env.local`.
+Copy `.env.example` to `.env.local`, add your Token Factory and Tavily API keys, and restart the development server. Never commit `.env.local`.
 
 ```bash
 cp .env.example .env.local
 npm run dev
 ```
 
-The live model can create candidate findings only. Every result is normalized to `pending` and still requires explicit human approval before an action is unlocked. Tavily grounding is the next integration milestone.
+Tavily retrieves external evidence before Nemotron analyzes the combined evidence trace. The live model can create candidate findings only. Every result is normalized to `pending` and still requires explicit human approval before an action is unlocked.
 
 ## Governance invariant
 

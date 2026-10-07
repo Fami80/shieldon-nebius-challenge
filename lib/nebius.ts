@@ -1,4 +1,4 @@
-import type { Finding, Severity } from "./investigation";
+import type { Evidence, Finding, Severity } from "./investigation";
 
 const DEFAULT_BASE_URL = "https://api.tokenfactory.us-central1.nebius.com/v1";
 const DEFAULT_MODEL = "nvidia/nemotron-3-super-120b-a12b";
@@ -53,7 +53,10 @@ export function parseFindings(content: string): Finding[] {
   }));
 }
 
-export async function investigateWithNebius(apiKey: string) {
+export async function investigateWithNebius(apiKey: string, externalEvidence?: Evidence) {
+  const evidenceText = externalEvidence
+    ? `${externalEvidence.label}. ${externalEvidence.detail} Source: ${externalEvidence.url}`
+    : "External research indicates conversion probability falls as response time increases.";
   const response = await fetch(`${process.env.NEBIUS_BASE_URL ?? DEFAULT_BASE_URL}/chat/completions`, {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
@@ -68,7 +71,7 @@ export async function investigateWithNebius(apiKey: string) {
         },
         {
           role: "user",
-          content: "Analyze this evidence: E-01: 38% of qualified enquiries waited over 24 hours for first response. E-02: 31 high-intent consultations were no-shows with no recorded recovery attempt. E-03: high-value treatment pages contain multiple competing calls to action. E-04: external research indicates conversion probability falls as response time increases. Produce up to three concise candidate findings using only evidence IDs E-01 through E-04.",
+          content: `Analyze this evidence: E-01: 38% of qualified enquiries waited over 24 hours for first response. E-02: 31 high-intent consultations were no-shows with no recorded recovery attempt. E-03: high-value treatment pages contain multiple competing calls to action. E-04: ${evidenceText} Produce up to three concise candidate findings using only evidence IDs E-01 through E-04.`,
         },
       ],
     }),

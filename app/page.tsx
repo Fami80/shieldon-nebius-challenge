@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { evidence, governedActions, initialFindings, type Decision, type Finding } from "../lib/investigation";
+import { evidence as initialEvidence, governedActions, initialFindings, type Decision, type Evidence, type Finding } from "../lib/investigation";
 
 const steps = ["Intake", "Evidence", "Analysis", "Decision", "Action"];
 
@@ -11,6 +11,7 @@ function StatusMark({ status }: { status: "done" | "active" | "locked" }) {
 
 export default function Home() {
   const [findings, setFindings] = useState<Finding[]>(initialFindings);
+  const [evidence, setEvidence] = useState<Evidence[]>(initialEvidence);
   const [selectedId, setSelectedId] = useState("F-01");
   const [notice, setNotice] = useState("Analysis complete · 3 candidate findings require human review");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -25,14 +26,15 @@ export default function Home() {
 
   async function runLiveAnalysis() {
     setIsAnalyzing(true);
-    setNotice("Nemotron is analyzing the evidence trace…");
+    setNotice("Tavily is researching · Nemotron will analyze the grounded evidence…");
     try {
       const response = await fetch("/api/investigate", { method: "POST" });
-      const payload = await response.json() as { findings?: Finding[]; model?: string; error?: string };
-      if (!response.ok || !payload.findings) throw new Error(payload.error ?? "Live analysis failed.");
+      const payload = await response.json() as { findings?: Finding[]; evidence?: Evidence[]; model?: string; groundedBy?: string; error?: string };
+      if (!response.ok || !payload.findings || !payload.evidence) throw new Error(payload.error ?? "Live analysis failed.");
       setFindings(payload.findings);
+      setEvidence(payload.evidence);
       setSelectedId(payload.findings[0].id);
-      setNotice(`Live analysis complete · ${payload.findings.length} candidates from ${payload.model ?? "NVIDIA Nemotron"}`);
+      setNotice(`Live analysis complete · ${payload.findings.length} candidates · grounded by ${payload.groundedBy ?? "Tavily"}`);
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "Live analysis failed.");
     } finally {
@@ -65,7 +67,7 @@ export default function Home() {
           <div className="model-card">
             <p>ANALYSIS ENGINE</p>
             <strong>NVIDIA Nemotron</strong>
-            <span>via Nebius · demo dataset</span>
+            <span>via Nebius · grounded by Tavily</span>
           </div>
         </aside>
 
@@ -107,7 +109,8 @@ export default function Home() {
               <div className="evidence-list">
                 {selected.evidenceIds.map((id) => {
                   const item = evidence.find((entry) => entry.id === id)!;
-                  return <div className="evidence-item" key={id}><span>{item.id}</span><div><strong>{item.label}</strong><p>{item.detail}</p><small>{item.source}{item.external ? " ↗" : ""}</small></div></div>;
+                  if (!item) return null;
+                  return <div className="evidence-item" key={id}><span>{item.id}</span><div><strong>{item.label}</strong><p>{item.detail}</p>{item.url ? <a href={item.url} target="_blank" rel="noreferrer">{item.source} ↗</a> : <small>{item.source}</small>}</div></div>;
                 })}
               </div>
 

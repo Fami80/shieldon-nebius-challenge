@@ -69,6 +69,8 @@ button { color:inherit; }
 .evidence-item strong { font:11px Georgia,serif;font-weight:400; }
 .evidence-item p { color:#858780;font-size:9px;line-height:1.5;margin:6px 0; }
 .evidence-item small { color:#5f625c;font-size:8px; }
+.evidence-item a { color:#9ca576;font-size:8px;text-decoration:none; }
+.evidence-item a:hover { color:var(--acid);text-decoration:underline; }
 .confidence { margin-top:20px;padding:14px 16px;background:#111212;display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center; }
 .confidence strong { color:#bac18c;font:10px monospace;font-weight:400; }
 .confidence p { grid-column:1/-1;color:#666963;font-size:8px;margin:0; }
