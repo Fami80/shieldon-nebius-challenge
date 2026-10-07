@@ -25,3 +25,10 @@ test("reasoning text, fenced JSON, optional IDs and snake-case evidence are norm
   assert.equal(findings[0].decision, "pending");
   assert.deepEqual(findings[0].evidenceIds, ["E-02"]);
 });
+
+test("top-level arrays and common model labels are normalized", () => {
+  const findings = parseFindings(`Analysis:\n[{"title":"Response delay","severity":"high","summary":"Leads wait.","impact":"Lost demand","evidenceIds":["E-01","E-04"],"confidence":0.91}]`);
+  assert.equal(findings[0].severity, "critical");
+  assert.equal(findings[0].confidence, "0.91");
+  assert.equal(findings[0].decision, "pending");
+});

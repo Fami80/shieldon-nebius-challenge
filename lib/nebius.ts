@@ -9,12 +9,18 @@ type ModelFinding = Omit<Finding, "id" | "decision"> & { id?: string };
 function normalizeModelFinding(value: unknown): ModelFinding | null {
   if (!value || typeof value !== "object") return null;
   const item = value as Record<string, unknown>;
-  const severity = typeof item.severity === "string" ? item.severity.toLowerCase() as Severity : null;
+  const rawSeverity = typeof item.severity === "string" ? item.severity.toLowerCase() : "";
+  const severityAliases: Record<string, Severity> = {
+    critical: "critical", high: "critical",
+    material: "material", medium: "material", moderate: "material",
+    watch: "watch", low: "watch",
+  };
+  const severity = severityAliases[rawSeverity] ?? null;
   const evidenceIds = item.evidenceIds ?? item.evidence_ids;
   if (typeof item.title !== "string" || !severity || !severities.has(severity) ||
     typeof item.summary !== "string" || typeof item.impact !== "string" ||
     !Array.isArray(evidenceIds) || !evidenceIds.every((id) => typeof id === "string" && /^E-0[1-4]$/.test(id)) ||
-    typeof item.confidence !== "string") return null;
+    !(typeof item.confidence === "string" || typeof item.confidence === "number")) return null;
 
   return {
     id: typeof item.id === "string" ? item.id : undefined,
@@ -23,14 +29,19 @@ function normalizeModelFinding(value: unknown): ModelFinding | null {
     summary: item.summary,
     impact: item.impact,
     evidenceIds,
-    confidence: item.confidence,
+    confidence: String(item.confidence),
   };
 }
 
 export function parseFindings(content: string): Finding[] {
-  const start = content.indexOf("{");
-  const end = content.lastIndexOf("}");
-  const json = start >= 0 && end > start ? content.slice(start, end + 1) : content.replace(/```(?:json)?|```/gi, "").trim();
+  const cleaned = content.replace(/```(?:json)?|```/gi, "").trim();
+  const objectStart = cleaned.indexOf("{");
+  const arrayStart = cleaned.indexOf("[");
+  const starts = [objectStart, arrayStart].filter((index) => index >= 0);
+  const start = starts.length ? Math.min(...starts) : -1;
+  const opener = start >= 0 ? cleaned[start] : "";
+  const end = opener === "[" ? cleaned.lastIndexOf("]") : cleaned.lastIndexOf("}");
+  const json = start >= 0 && end > start ? cleaned.slice(start, end + 1) : cleaned;
   const parsed: unknown = JSON.parse(json);
   const values = Array.isArray(parsed)
     ? parsed
