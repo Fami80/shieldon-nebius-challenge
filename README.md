@@ -24,7 +24,16 @@ npm run dev
 
 Then open `http://localhost:3000`.
 
-The current interface uses a seeded demonstration case so the governance journey can be reviewed without credentials. Live Nebius and Tavily integrations are the next implementation milestone.
+The interface works with a seeded demonstration case and can also run the same evidence through NVIDIA Nemotron on Nebius Token Factory.
+
+Copy `.env.example` to `.env.local`, add your Token Factory API key, and restart the development server. Never commit `.env.local`.
+
+```bash
+cp .env.example .env.local
+npm run dev
+```
+
+The live model can create candidate findings only. Every result is normalized to `pending` and still requires explicit human approval before an action is unlocked. Tavily grounding is the next integration milestone.
 
 ## Governance invariant
 

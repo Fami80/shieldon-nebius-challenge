@@ -13,6 +13,7 @@ export default function Home() {
   const [findings, setFindings] = useState<Finding[]>(initialFindings);
   const [selectedId, setSelectedId] = useState("F-01");
   const [notice, setNotice] = useState("Analysis complete · 3 candidate findings require human review");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const selected = findings.find((finding) => finding.id === selectedId) ?? findings[0];
   const actions = useMemo(() => governedActions(findings), [findings]);
   const reviewed = findings.filter((finding) => finding.decision !== "pending").length;
@@ -20,6 +21,23 @@ export default function Home() {
   function decide(decision: Exclude<Decision, "pending">) {
     setFindings((current) => current.map((finding) => finding.id === selected.id ? { ...finding, decision } : finding));
     setNotice(`${selected.id} ${decision} by Fahmi Al Mughairy · decision recorded`);
+  }
+
+  async function runLiveAnalysis() {
+    setIsAnalyzing(true);
+    setNotice("Nemotron is analyzing the evidence trace…");
+    try {
+      const response = await fetch("/api/investigate", { method: "POST" });
+      const payload = await response.json() as { findings?: Finding[]; model?: string; error?: string };
+      if (!response.ok || !payload.findings) throw new Error(payload.error ?? "Live analysis failed.");
+      setFindings(payload.findings);
+      setSelectedId(payload.findings[0].id);
+      setNotice(`Live analysis complete · ${payload.findings.length} candidates from ${payload.model ?? "NVIDIA Nemotron"}`);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Live analysis failed.");
+    } finally {
+      setIsAnalyzing(false);
+    }
   }
 
   return (
@@ -58,7 +76,12 @@ export default function Home() {
               <h1>Candidate findings</h1>
               <p>AI can investigate and recommend. Only you can govern a finding.</p>
             </div>
-            <div className="review-count"><strong>{reviewed}/{findings.length}</strong><span>reviewed</span></div>
+            <div>
+              <button className="live-analysis" onClick={runLiveAnalysis} disabled={isAnalyzing}>
+                {isAnalyzing ? "Analyzing…" : "Run live Nemotron"}
+              </button>
+              <div className="review-count"><strong>{reviewed}/{findings.length}</strong><span>reviewed</span></div>
+            </div>
           </div>
 
           <div className="notice" role="status"><span>✦</span>{notice}</div>

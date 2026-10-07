@@ -36,6 +36,8 @@ button { color:inherit; }
 .review-count { text-align:right;display:flex;flex-direction:column; }
 .review-count strong { color:var(--acid);font:24px Georgia,serif; }
 .review-count span { color:#777972;font-size:9px;text-transform:uppercase;letter-spacing:.14em; }
+.live-analysis { border:1px solid #7047eb;border-radius:7px;background:#7047eb;color:#fff;cursor:pointer;font:inherit;font-size:.75rem;font-weight:700;letter-spacing:.03em;margin-bottom:.55rem;padding:.68rem .9rem;width:100%; }
+.live-analysis:disabled { cursor:wait;opacity:.65; }
 .notice { display:flex;align-items:center;gap:10px;margin:18px 0;padding:12px 15px;border:1px solid #3a4028;background:#171a12;color:#bac18c;font-size:10px;letter-spacing:.04em; }
 .notice span { color:var(--acid); }
 .decision-grid { display:grid;grid-template-columns:minmax(270px,.72fr) minmax(430px,1.28fr);border:1px solid var(--line);background:var(--panel);min-height:650px; }
