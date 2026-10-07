@@ -113,7 +113,7 @@ export default function Home() {
             </div>
             <div>
               <button className="live-analysis" onClick={runLiveAnalysis} disabled={isAnalyzing}>
-                {isAnalyzing ? "Researching…" : "Run again"}
+                {isAnalyzing ? "Researching…" : "Run live investigation"}
               </button>
               <div className="review-count"><strong>{reviewed}/{findings.length}</strong><span>reviewed</span></div>
             </div>
