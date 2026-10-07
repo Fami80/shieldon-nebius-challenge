@@ -4,32 +4,50 @@ const DEFAULT_BASE_URL = "https://api.tokenfactory.us-central1.nebius.com/v1";
 const DEFAULT_MODEL = "nvidia/nemotron-3-super-120b-a12b";
 const severities = new Set<Severity>(["critical", "material", "watch"]);
 
-type ModelFinding = Omit<Finding, "decision">;
+type ModelFinding = Omit<Finding, "id" | "decision"> & { id?: string };
 
-function isModelFinding(value: unknown): value is ModelFinding {
-  if (!value || typeof value !== "object") return false;
+function normalizeModelFinding(value: unknown): ModelFinding | null {
+  if (!value || typeof value !== "object") return null;
   const item = value as Record<string, unknown>;
-  return typeof item.id === "string" && typeof item.title === "string" &&
-    typeof item.severity === "string" && severities.has(item.severity as Severity) &&
-    typeof item.summary === "string" && typeof item.impact === "string" &&
-    Array.isArray(item.evidenceIds) && item.evidenceIds.every((id) => typeof id === "string") &&
-    typeof item.confidence === "string";
+  const severity = typeof item.severity === "string" ? item.severity.toLowerCase() as Severity : null;
+  const evidenceIds = item.evidenceIds ?? item.evidence_ids;
+  if (typeof item.title !== "string" || !severity || !severities.has(severity) ||
+    typeof item.summary !== "string" || typeof item.impact !== "string" ||
+    !Array.isArray(evidenceIds) || !evidenceIds.every((id) => typeof id === "string" && /^E-0[1-4]$/.test(id)) ||
+    typeof item.confidence !== "string") return null;
+
+  return {
+    id: typeof item.id === "string" ? item.id : undefined,
+    title: item.title,
+    severity,
+    summary: item.summary,
+    impact: item.impact,
+    evidenceIds,
+    confidence: item.confidence,
+  };
 }
 
 export function parseFindings(content: string): Finding[] {
-  const parsed: unknown = JSON.parse(content);
+  const start = content.indexOf("{");
+  const end = content.lastIndexOf("}");
+  const json = start >= 0 && end > start ? content.slice(start, end + 1) : content.replace(/```(?:json)?|```/gi, "").trim();
+  const parsed: unknown = JSON.parse(json);
   const values = Array.isArray(parsed)
     ? parsed
     : parsed && typeof parsed === "object" && Array.isArray((parsed as { findings?: unknown }).findings)
       ? (parsed as { findings: unknown[] }).findings
-      : [];
+      : parsed && typeof parsed === "object"
+        ? Object.values(parsed).find(Array.isArray) ?? []
+        : [];
 
-  if (!values.length || !values.every(isModelFinding)) {
+  const normalized = values.map(normalizeModelFinding);
+
+  if (!normalized.length || normalized.some((finding) => !finding)) {
     throw new Error("Nebius returned an unexpected findings format.");
   }
 
-  return values.slice(0, 5).map((finding, index) => ({
-    ...finding,
+  return normalized.slice(0, 5).map((finding, index) => ({
+    ...finding!,
     id: `F-${String(index + 1).padStart(2, "0")}`,
     decision: "pending",
   }));
@@ -66,4 +84,3 @@ export async function investigateWithNebius(apiKey: string) {
   if (!content) throw new Error("Nebius returned no analysis content.");
   return { findings: parseFindings(content), model: payload.model ?? process.env.NEBIUS_MODEL ?? DEFAULT_MODEL };
 }
-
