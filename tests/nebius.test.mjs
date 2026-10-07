@@ -6,10 +6,11 @@ test("Nebius findings are always normalized to pending", () => {
   const findings = parseFindings(JSON.stringify({ findings: [{
     id: "anything", title: "Lead delay", severity: "critical",
     summary: "Qualified leads wait too long.", impact: "Revenue at risk",
-    evidenceIds: ["E-01"], confidence: "High", decision: "approved",
+    evidenceIds: ["E-01"], confidence: "High", recommendedAction: "Assign response ownership.", decision: "approved",
   }] }));
   assert.equal(findings[0].id, "F-01");
   assert.equal(findings[0].decision, "pending");
+  assert.equal(findings[0].recommendedAction, "Assign response ownership.");
 });
 
 test("invalid model output is rejected", () => {
@@ -24,6 +25,7 @@ test("reasoning text, fenced JSON, optional IDs and snake-case evidence are norm
   assert.equal(findings[0].severity, "material");
   assert.equal(findings[0].decision, "pending");
   assert.deepEqual(findings[0].evidenceIds, ["E-02"]);
+  assert.match(findings[0].recommendedAction, /Assign an owner/);
 });
 
 test("top-level arrays and common model labels are normalized", () => {
@@ -31,4 +33,14 @@ test("top-level arrays and common model labels are normalized", () => {
   assert.equal(findings[0].severity, "critical");
   assert.equal(findings[0].confidence, "0.91");
   assert.equal(findings[0].decision, "pending");
+});
+
+test("dynamic evidence IDs are accepted only when supplied by the register", () => {
+  const content = JSON.stringify({ findings: [{
+    title: "External benchmark gap", severity: "watch", summary: "A benchmark differs.",
+    impact: "Requires validation", evidenceIds: ["E-06"], confidence: "Medium",
+    recommendedAction: "Validate the benchmark against current operations.",
+  }] });
+  assert.equal(parseFindings(content, ["E-01", "E-06"])[0].evidenceIds[0], "E-06");
+  assert.throws(() => parseFindings(content, ["E-01"]));
 });

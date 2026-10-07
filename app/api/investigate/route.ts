@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
-import { investigateWithNebius } from "../../../lib/nebius";
-import { evidence } from "../../../lib/investigation";
-import { researchWithTavily } from "../../../lib/tavily";
+import { runInvestigation } from "../../../lib/run-investigation";
 
-export async function POST() {
+export async function POST(request: Request) {
   const apiKey = process.env.NEBIUS_API_KEY;
   const tavilyApiKey = process.env.TAVILY_API_KEY;
   if (!apiKey) {
@@ -14,15 +12,10 @@ export async function POST() {
   }
 
   try {
-    const externalEvidence = await researchWithTavily(tavilyApiKey);
-    const analysis = await investigateWithNebius(apiKey, externalEvidence);
-    return NextResponse.json({
-      ...analysis,
-      evidence: evidence.map((item) => item.id === externalEvidence.id ? externalEvidence : item),
-      groundedBy: "Tavily",
-    });
+    return NextResponse.json(await runInvestigation(await request.json(), apiKey, tavilyApiKey));
   } catch (error) {
     const message = error instanceof Error ? error.message : "Nebius analysis failed.";
-    return NextResponse.json({ error: message }, { status: 502 });
+    const isInputError = /required|must|provide|needs|invalid/i.test(message);
+    return NextResponse.json({ error: message }, { status: isInputError ? 400 : 502 });
   }
 }

@@ -10,6 +10,7 @@ const baseFinding = {
   impact: "Test impact",
   evidenceIds: ["E-01"],
   confidence: "Test confidence",
+  recommendedAction: "Test governed action",
 };
 
 test("pending candidate findings never produce governed actions", () => {
@@ -26,4 +27,5 @@ test("only explicitly approved findings produce governed actions", () => {
     { ...baseFinding, id: "F-02", decision: "pending" },
   ]);
   assert.deepEqual(result.map((action) => action.findingId), ["F-01"]);
+  assert.equal(result[0].action, "Test governed action");
 });
