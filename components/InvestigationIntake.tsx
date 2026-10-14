@@ -33,7 +33,7 @@ export function InvestigationIntake({ input, isAnalyzing, isSampleInput, onChang
         <em>{isSampleInput ? "Sample case · synthetic inputs only" : "Reviewer-entered case"}</em>
       </summary>
       <div className="intake-body">
-        <div className="sample-disclosure intake-disclosure" role="note"><strong>{isSampleInput ? "Synthetic sample data" : "Input handling"}</strong><span>{isSampleInput ? "These metrics are illustrative, not verified business facts. " : "Your case and evidence are sent to configured providers only when you run it. " }Each run calls Tavily and Nebius and may use your configured API credits.</span></div>
+        <div className="sample-disclosure intake-disclosure" role="note"><strong>{isSampleInput ? "Synthetic sample data" : "Input handling"}</strong><span>{isSampleInput ? "These metrics are illustrative, not verified business facts. " : ""}The current case and decisions save in this browser only. Running sends the case and evidence to Nebius and Tavily and may use your configured API credits.</span></div>
         <div className="intake-fields">
           <label>
             <span>CASE TITLE</span>
