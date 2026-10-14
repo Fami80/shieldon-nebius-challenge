@@ -23,7 +23,7 @@ export function DecisionAudit({ records, caseTitle }: Props) {
         <h2>Governance audit trail</h2>
       </div>
       {records.length === 0 ? (
-        <p className="locked-copy">Every approval or rejection will retain its reviewer, rationale, timestamp and evidence links.</p>
+        <p className="locked-copy">No decisions recorded yet.</p>
       ) : (
         <div className="audit-content">
           <div className="audit-list">
@@ -37,6 +37,7 @@ export function DecisionAudit({ records, caseTitle }: Props) {
           <button type="button" className="export-register" onClick={exportRegister}>Export decision register</button>
         </div>
       )}
+      <p className="audit-note">Stored in this browser only. This demo has no server-side audit database. Export the register for a portable copy.</p>
     </section>
   );
 }

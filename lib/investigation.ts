@@ -42,64 +42,21 @@ export type DecisionRecord = {
 export const evidence: Evidence[] = [
   {
     id: "E-01",
-    source: "CRM export",
-    label: "Lead response time",
-    detail: "38% of qualified enquiries waited more than 24 hours for a first response.",
+    source: "CRM export · sample",
+    label: "Quarterly renewal rate",
+    detail: "Sample metric from the demo scenario: renewal rate declined from 82% to 68%.",
   },
   {
     id: "E-02",
-    source: "Booking data",
-    label: "Consultation leakage",
-    detail: "31 high-intent consultations were marked no-show with no recorded recovery attempt.",
+    source: "Cancellation survey · sample",
+    label: "Onboarding-related cancellations",
+    detail: "Sample metric from the demo scenario: 27% of cancellation notes mention onboarding difficulty.",
   },
   {
     id: "E-03",
-    source: "Website review",
-    label: "Unclear next step",
-    detail: "High-value treatment pages present multiple competing calls to action.",
-  },
-  {
-    id: "E-04",
-    source: "Tavily · external",
-    label: "Response-speed benchmark",
-    detail: "Independent research indicates conversion probability falls as lead response time increases.",
-    external: true,
-  },
-];
-
-export const initialFindings: Finding[] = [
-  {
-    id: "F-01",
-    title: "High-intent leads are cooling before contact",
-    severity: "critical",
-    summary: "Slow first response and unowned follow-up create a measurable break between demand and booking.",
-    impact: "AED 46k–71k monthly revenue at risk",
-    evidenceIds: ["E-01", "E-04"],
-    confidence: "High evidence alignment",
-    recommendedAction: "Install a 15-minute qualified-lead response SLA with named ownership and daily exception review.",
-    decision: "pending",
-  },
-  {
-    id: "F-02",
-    title: "No-show recovery is not operating as a system",
-    severity: "material",
-    summary: "The current workflow records missed consultations but shows no consistent recovery ownership.",
-    impact: "31 recoverable conversations identified",
-    evidenceIds: ["E-02"],
-    confidence: "Direct operational evidence",
-    recommendedAction: "Launch a two-step no-show recovery sequence with same-day ownership and weekly outcome tracking.",
-    decision: "pending",
-  },
-  {
-    id: "F-03",
-    title: "Website choice density may suppress action",
-    severity: "watch",
-    summary: "Competing calls to action may add friction, but conversion data is required before intervention.",
-    impact: "Impact not yet quantified",
-    evidenceIds: ["E-03"],
-    confidence: "Missing conversion evidence",
-    recommendedAction: "Run a controlled single-CTA test before changing the full journey.",
-    decision: "pending",
+    source: "Product analytics · sample",
+    label: "Time to first milestone",
+    detail: "Sample metric from the demo scenario: time to first milestone doubled during the same period.",
   },
 ];
 

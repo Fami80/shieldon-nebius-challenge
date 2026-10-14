@@ -15,12 +15,13 @@ Business teams increasingly use AI to analyse operational data, but a plausible 
 
 ShieldOn makes that boundary visible:
 
-1. A reviewer defines an investigation and enters 1–6 internal evidence items.
-2. Tavily generates current external context from the live case, not from a fixed query.
-3. NVIDIA Nemotron analyses one numbered evidence register through Nebius Token Factory.
-4. Every candidate finding must cite evidence IDs from that register.
-5. No action is unlocked while a finding is pending or rejected.
-6. A human approval creates an auditable decision record and governed action.
+1. A reviewer starts with the video-matched subscription-retention example or enters a case with 1–6 internal evidence items.
+2. Example inputs are synthetic. ShieldOn creates no findings until the reviewer runs a live investigation.
+3. Tavily generates current external context from the live case, not from a fixed query.
+4. NVIDIA Nemotron analyses one numbered evidence register through Nebius Token Factory.
+5. Every candidate finding must cite evidence IDs from that register.
+6. No action is unlocked while a finding is pending or rejected.
+7. A human approval creates a decision record and governed action. The demo saves it in the current browser only.
 
 ## Why it is different
 
@@ -46,23 +47,22 @@ flowchart TD
 - **Nebius Token Factory** serves the open NVIDIA model through an OpenAI-compatible inference endpoint.
 - **Tavily Search** retrieves up to three live sources from a query derived from the investigation objective and evidence signals. URLs, source domains, excerpts and relevance scores remain visible.
 - **Next.js 16 + TypeScript** provide the public application and server-side API boundary.
-- **Node test runner** verifies the negative governance boundary, input validation, Tavily traceability and Nemotron response normalisation.
+- **Node test runner** verifies the negative governance boundary, input validation, Tavily traceability, Nemotron response normalisation and request-limit behavior.
 
 ## Governance invariant
 
 > A pending or rejected candidate finding must never produce a governed action.
 
-All model findings are normalised to `pending`, even if a model response attempts to provide another decision. Evidence IDs outside the supplied register are rejected. Only the human decision handler can change governance state and create the decision record.
+All model findings are normalised to `pending`, even if a model response attempts to provide another decision. Evidence IDs outside the supplied register are rejected. Only the human decision handler can change governance state and create the decision record. The demo stores this state in the current browser’s local storage. It is not a shared or server-side audit database.
 
 ## Try the judge flow
 
 1. Open the [live demo](https://shieldon-nebius-challenge.vercel.app).
-2. Expand **Configure investigation**.
-3. Edit the case objective and evidence, or keep the seeded revenue-leakage example.
-4. Select **Run grounded investigation**.
-5. Inspect the Tavily query, external citations and evidence IDs linked to each Nemotron finding.
-6. Add a reviewer rationale, then approve or reject a finding.
-7. Confirm that only approval unlocks an action, and export the decision register.
+2. Expand **Configure investigation**. The default subscription-retention metrics are synthetic and match the demo video.
+3. Select **Run live investigation**. This calls Tavily and Nebius and may consume API credits.
+4. Inspect the Tavily query, external citations and evidence IDs linked to each Nemotron finding.
+5. Add a reviewer rationale, then approve or reject a finding.
+6. Confirm that only approval unlocks an action. Refresh the page to confirm this browser restores the session, then export the decision register for a portable copy.
 
 ## Local development
 
@@ -104,7 +104,16 @@ The test suite covers:
 - evidence references must exist in the active register;
 - custom investigation input is bounded and validated;
 - Tavily results retain traceable URLs and relevance;
-- common Nemotron JSON response variations are safely normalised.
+- common Nemotron JSON response variations are safely normalised;
+- the per-instance request limiter allows three calls per minute and resets expired windows.
+
+## Demo data, privacy and request limits
+
+The default subscription-retention case matches the demo video. Its sample figures are synthetic and illustrative, not verified company facts. ShieldOn creates no candidate findings until a user runs a live investigation.
+
+Each live run sends the entered case and evidence to the configured Tavily and Nebius APIs. The demo does not save input or decisions to a server database. The current browser stores the session locally so a refresh does not erase it. Use the export control for a portable decision register.
+
+The investigation API applies a per-instance, in-memory limit of 3 requests per minute per client IP, plus a 24 KB request-body limit. Serverless instances do not share that in-memory counter, so this is a basic demo safeguard, not a global abuse-control system. Set provider-side spending limits and add a shared rate-limit service or platform firewall before production use.
 
 ## Built during the challenge
 
